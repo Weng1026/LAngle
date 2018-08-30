@@ -2,21 +2,28 @@ var DBconfig=require('../DB/mysql').config.db;
 var mysql=require('mysql');
 
 /*
+*
 * @author TimmyWang
 * @time 2018/8/29
 * 操作表user_info，将操作结果返回
+*
 * */
 
 
 /*
 * 搜索用户
+*
 * @param{string}user_name
-* @return{string}err 错误信息，无错误为undefined
-* @return{object}results 查询结果，无查询结果返回undefined
+*
+* @callback{string err,object result}
+* (err,undefined)查询数据库出错
+* (undefined,undefined)数据库中没有该用户
+* (undefined,object)找到该用户并返回
+*
 * */
 exports.seachUserByName=function (user_name,callback) {
     var querySql='select * from user_info where user_name=\''+user_name+'\'';
-    cn=mysql.createConnection(
+    var cn=mysql.createConnection(
         DBconfig
     );
     cn.connect();
@@ -28,14 +35,20 @@ exports.seachUserByName=function (user_name,callback) {
             callback(err,undefined);
         }else{
             //数据库查询成功
-            cn.end();
-            callback(undefined,results);
+            if(results[0]){
+                cn.end();
+                callback(undefined,results);
+            }else{
+                cn.end();
+                callback(undefined,undefined);
+            }
         }
     });
 };
 
 /*
 * 添加用户
+*
 * @param{string}user_name
 * @param{string}password
 * @param{int}sex 0:male 1:female
@@ -53,7 +66,7 @@ exports.seachUserByName=function (user_name,callback) {
 *
 * */
 exports.addUser=function (user_name,password,sex,height,weight,age,callback) {
-    cn=mysql.createConnection(
+    var cn=mysql.createConnection(
         DBconfig
     );
     cn.connect();
@@ -71,7 +84,7 @@ exports.addUser=function (user_name,password,sex,height,weight,age,callback) {
     var data_location='/data/healthyData/'+user_name+'.txt';
     var addSqlParams=[user_name,password,sex,height,weight,age,portrait_location,data_location];
     cn.query(addSql,addSqlParams,function (err,result) {
-        if(err!=undefined){
+        if(err){
             //数据库插入失败
             cn.end();
             callback(err,undefined);
@@ -92,7 +105,7 @@ exports.addUser=function (user_name,password,sex,height,weight,age,callback) {
 * */
 exports.updataUser=function (user_name,updateConfig,callback) {
     //根据更新项创建sql语句
-    var updateSql="update user info set ";
+    var updateSql="update user_info set ";
     var updataParam=[];
     for(var key in updateConfig){
         updateSql=updateSql+key+"=?,";

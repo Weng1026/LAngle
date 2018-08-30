@@ -128,5 +128,30 @@ exports.deleteUser=function (user_name,callback) {
     })
 };
 
+/*
+*
+* 登陆检测
+*
+* @param{string}user_name
+* @param{string}password
+*
+* callback(string err,bool result)
+* err:错误信息
+* result:true表示密码账号正确，false表示密码或者用户吗不正确
+*
+* */
+exports.loginCheck=function (user_name,password,callback) {
+    user.seachUserByName(user_name,function (err,results) {
+        if(err){
+            callback(err,undefined);
+        }else{
+            if(results){
+                callback(undefined,password==results[0].password?true:false);
+            }else{
+                callback(undefined,false);
+            }
+        }
+    })
+};
 
 

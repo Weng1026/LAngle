@@ -1,5 +1,12 @@
 var user=require('./user');
-var async=require('async');
+
+/*
+*
+* @author TimmyWang
+* @time 2018/8/30
+* userDao接口
+*
+* */
 
 /*
 *

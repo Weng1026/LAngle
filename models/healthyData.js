@@ -67,9 +67,8 @@ function HealthyData() {
     * @param{string}user_name
     * @param{int}days
     *
-    * @callback(int items,Array returnData)
-    * iterms:返回的数据量（按照天数分）
-    * returnData:返回的数据
+    * @callback(string returnData)
+    * 返回的数据
     *
     * */
 
@@ -86,17 +85,25 @@ function HealthyData() {
                     for(var i=0;i<recordedDays;i++){
                         returnData[i]=readData.Data[recordedDays-1-i];
                     }
-                    callback(recordedDays,returnData);
+                    var healthyData={
+                        "data":returnData,
+                        "days":recordedDays
+                    };
+                    callback(JSON.stringify(healthyData));
                 }else{
                     //记录的天数比需要的天数多
                     var returnData=new Array();
                     for(var i=0;i<days;i++){
                         returnData[i]=readData.Data[recordedDays-1-i];
                     }
-                    callback(days,returnData);
+                    var healthyData={
+                        "data":returnData,
+                        "days":days
+                    };
+                    callback(JSON.stringify(healthyData));
                 }
             }else{
-                callback(0,undefined);
+                callback(null);
             }
         });
     };

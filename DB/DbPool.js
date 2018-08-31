@@ -1,12 +1,12 @@
 var mysql=require('mysql');
-var dbConfig=require('./dbconfig').config.db;
+var dbConfig=require('./DbConfig').config.db;
 
 const dbPool=mysql.createPool(
     dbConfig
 );
 
 var query=function (sql,options,callback) {
-    dbPool.getConnection(function (err,conn) {
+    dbPool.getConnection(function (err, conn) {
         if(err){
             callback(err,null);
         }else{

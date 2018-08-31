@@ -9,7 +9,7 @@ var User=require('./user');
 * */
 
 function userDao() {
-    var user=new User();
+    const user=new User();
     this.getUser=function () {
         if(user==null){
             return user;

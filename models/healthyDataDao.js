@@ -9,7 +9,7 @@
 var HealthyData=require('./healthyData')
 
 function HealthyDataDao() {
-    var healthyData=new HealthyData();
+    const healthyData=new HealthyData();
     this.getHealthyData=function () {
         if (healthyData == null) {
             return new HealthyData();

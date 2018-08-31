@@ -9,7 +9,7 @@
 var MedicalRecords=require('./medicalRecords');
 
 function medecalRecordsDao() {
-    var medicalRecords=new MedicalRecords();
+    const medicalRecords=new MedicalRecords();
     this.getMedicalRecords=function () {
         if(medicalRecords){
             return medicalRecords;

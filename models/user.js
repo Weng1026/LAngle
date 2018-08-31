@@ -1,4 +1,3 @@
-var mysql=require('mysql');
 var query=require('../DB/DbPool');
 var userSql=require('../DB/UserSql').UserSql;
 /*

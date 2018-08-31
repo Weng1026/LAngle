@@ -1,7 +1,7 @@
 /*
 *
 * @author TimmyWang
-* @time 2018/8/29
+* @time 2018/8/30
 * 提供健康数据的接口
 *
 * */
@@ -17,6 +17,6 @@ function HealthyDataDao() {
             return healthyData;
         }
     };
-}
+};
 
 module.exports=HealthyDataDao;

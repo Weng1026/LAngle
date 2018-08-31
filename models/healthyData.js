@@ -4,6 +4,26 @@
 * @time 2018/8/29
 * 与文件交互，实现用户健康数据文件的读写操作
 *
+* 健康数据格式
+* {
+*   "Data":[
+*         {
+*            "rate":[...],
+*            "step":[...],
+*            "deepTime":[...],
+*            "shallowTime":[...],
+*            "awakeTime":[...]
+*         },
+*         {
+*            "rate":[...],
+*            "step":[...],
+*            "deepTime":[...],
+*            "shallowTime":[...],
+*            "awakeTime":[...]
+*         }
+*   ]
+* }
+*
 * */
 
 var fs=require('fs');

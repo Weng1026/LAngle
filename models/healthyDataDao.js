@@ -10,13 +10,13 @@ var HealthyData=require('./healthyData')
 
 function HealthyDataDao() {
     var healthyData=new HealthyData();
-    this.getHealthyData(){
-        if(healthyData==null){
+    this.getHealthyData=function () {
+        if (healthyData == null) {
             return new HealthyData();
-        }else{
+        } else {
             return healthyData;
         }
-    }
+    };
 }
 
 module.exports=HealthyDataDao;

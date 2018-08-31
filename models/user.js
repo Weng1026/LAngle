@@ -1,6 +1,6 @@
-var DBconfig=require('../DB/mysql').config.db;
 var mysql=require('mysql');
-
+var query=require('../DB/DbPool');
+var userSql=require('../DB/UserSql').UserSql;
 /*
 *
 * @author TimmyWang
@@ -8,147 +8,158 @@ var mysql=require('mysql');
 * 操作表user_info，将操作结果返回
 *
 * */
-
-
-/*
-* 搜索用户
-*
-* @param{string}user_name
-*
-* @callback{string err,object result}
-* (err,undefined)查询数据库出错
-* (undefined,undefined)数据库中没有该用户
-* (undefined,object)找到该用户并返回
-*
-* */
-exports.seachUserByName=function (user_name,callback) {
-    var querySql='select * from user_info where user_name=\''+user_name+'\'';
-    var cn=mysql.createConnection(
-        DBconfig
-    );
-    cn.connect();
-    cn.query(querySql,function (err,results) {
-        if(err!=undefined){
-            //数据库查询有错误
-            //返回错误信息
-            cn.end();
-            callback(err,undefined);
-        }else{
-            //数据库查询成功
-            if(results[0]){
-                cn.end();
-                callback(undefined,results);
+function user(){
+    /*
+    *
+    * 搜索用户
+    *
+    * @param{string}user_name
+    *
+    * @callback{string err,string result}
+    * err:错误信息
+    * result：用户数据JSON格式
+    *
+    * */
+    this.searchUserByName=function (user_name,callback) {
+        var sql=userSql.select;
+        query(sql,[user_name],function (err,results) {
+            if(err){
+                callback(err,null);
             }else{
-                cn.end();
-                callback(undefined,undefined);
+                if(results[0]){
+                    var user={
+                        "user_name":results[0].user_name,
+                        "password":results[0].password,
+                        "sex":results[0].sex,
+                        "height":results[0].height,
+                        "weight":results[0].weight,
+                        "age":results[0].age,
+                        "portrait_location":results[0].portrait_location,
+                        "data_location":results[0].data_location
+                    };
+                    callback(null,JSON.stringify(user));
+                }else{
+                    callback(null,null);
+                }
             }
+        })
+    };
+
+    /*
+    *
+    * 添加用户
+    *
+    * @param{string}userInfo
+    *
+    * @callback{string err,int result}
+    * err:错误信息
+    * result：添加条数
+    *
+    * */
+
+    this.addUser=function (userInfo,callback) {
+        var sql=userSql.insert;
+        var user=JSON.parse(userInfo);
+        var options=[
+            user['user_name'],
+            user['password'],
+            user['sex'],
+            user['height'],
+            user['weight'],
+            user['age'],
+            '/data/portrait/'+user['user_name']+'.jpg',
+            '/data/healthyData/'+user['user_name']+'.json'
+        ];
+        query(sql,options,function (err,results) {
+            if(err){
+                callback(err,null);
+            }else{
+                callback(null,results['affectedRows']);
+            }
+        })
+    };
+
+    /*
+    *
+    * 更新用户
+    *
+    * @param{string}user_name
+    * @param{string}updateData
+    *
+    * @callback{string err,int result}
+    * err:错误信息
+    * result：更新的条数
+    *
+    * */
+    this.updateUser=function (user_name,updateData,callback) {
+        var sqlPreffix=userSql.updateSqlPrefix;
+        var sqlSuffix=userSql.updateSqlSuffix;
+        var data=JSON.parse(updateData);
+        var options=[];
+        for(var key in data){
+            sqlPreffix=sqlPreffix+key+"=?,";
+            options.push(data[key]);
         }
-    });
-};
+        sqlPreffix=sqlPreffix.substring(0,sqlPreffix.length-1);
+        var sql=sqlPreffix+sqlSuffix;
+        options.push(user_name);
+        query(sql,options,function (err,results) {
+            if(err){
+                callback(err,null);
+            }else{
+                callback(null,results['affectedRows']);
+            }
+        });
+    };
 
-/*
-* 添加用户
-*
-* @param{string}user_name
-* @param{string}password
-* @param{int}sex 0:male 1:female
-* @param{int}height
-* @param{int}weight
-* @param{int}age
-*
-* @return{string}err
-* @return{object}
-*
-* 用户数据默认保存到本地/data目录下
-* 健康数据保存在/data/healthyData下
-* 头像图片保存在/data/portrait下
-*
-*
-* */
-exports.addUser=function (user_name,password,sex,height,weight,age,callback) {
-    var cn=mysql.createConnection(
-        DBconfig
-    );
-    cn.connect();
-    var addSql="insert into user_info(" +
-        "user_name," +
-        "password," +
-        "sex," +
-        "height," +
-        "weight," +
-        "age," +
-        "portrait_location," +
-        "data_location" +
-        ") values(?,?,?,?,?,?,?,?)";
-    var portrait_location='/data/portrait/'+user_name+'.png';
-    var data_location='/data/healthyData/'+user_name+'.txt';
-    var addSqlParams=[user_name,password,sex,height,weight,age,portrait_location,data_location];
-    cn.query(addSql,addSqlParams,function (err,result) {
-        if(err){
-            //数据库插入失败
-            cn.end();
-            callback(err,undefined);
-        }else{
-            cn.end();
-            callback(undefined,result);
-        }
-    });
-};
+    /*
+    *
+    * 检测用户名是否存在
+    *
+    * @param{string}user_name
+    *
+    * @callback{string err,bool result}
+    * err:错误信息
+    * result：表示用户是否存在
+    *
+    * */
+    this.isNull=function (user_name,callback) {
+        var sql=userSql.select;
+        query(sql,[user_name],function (err,results) {
+            if(err){
+                callback(err,null);
+            }else{
+                callback(null,results[0]?false:true);
+            }
+        });
+    };
 
-
-/*
-* 更新用户数据
-* @param{string}user_name 需要更新数据的用户名
-* @param{string}updateConfig 更新的选项
-* @return{string} err
-* @return{object}
-* */
-exports.updataUser=function (user_name,updateConfig,callback) {
-    //根据更新项创建sql语句
-    var updateSql="update user_info set ";
-    var updataParam=[];
-    for(var key in updateConfig){
-        updateSql=updateSql+key+"=?,";
-        updataParam.push(updateConfig[key]);
+    /*
+    *
+    * 登陆检测
+    *
+    * @param{string}user_name
+    * @param{string}password
+    *
+    * @callback{string err,bool result}
+    * err:错误信息
+    * result：用户密码是否正确
+    *
+    * */
+    this.loginCheck=function (user_name,password,callback) {
+        var sql=userSql.select;
+        query(sql,[user_name],function (err,results) {
+            if(err){
+                callback(err,null);
+            }else{
+                if(results){
+                    callback(null,results[0]['password']==password?true:false);
+                }else{
+                    callback(null,false);
+                }
+            }
+        })
     }
-    updateSql=updateSql.substring(0,updateSql.length-1);
-    updateSql+=' where user_name=\''+user_name+'\'';
-    cn=mysql.createConnection(
-        DBconfig
-    );
-    cn.connect();
-    //更新数据库
-    cn.query(updateSql,updataParam,function (err,result) {
-        if(err!=undefined){
-            cn.end();
-            callback(err,undefined);
-        }else{
-            cn.end();
-            callback(undefined,result);
-        }
-    })
-};
+}
 
-/*
-* 删除用户
-* @param{string}user_name
-* @return{string} err
-* */
-exports.deleteUser=function (user_name,callback) {
-    var deleteSql='delete from user_info where user_name =\'' +
-        user_name+
-        '\'';
-    cn=mysql.createConnection(
-        DBconfig
-    );
-    cn.connect();
-    cn.query(deleteSql,function (err,result) {
-        if(err!=undefined){
-            cn.end();
-            callback(err,undefined);
-        }else{
-            cn.end();
-            callback(undefined,result);
-        }
-    })
-};
+module.exports=user;
